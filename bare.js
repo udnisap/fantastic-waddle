@@ -15,10 +15,19 @@ function dataFromFormular(startX, endX, startY, endY, func){
     var f0=[];            
     output.push(f0);
     for(var y=startY;y<=endY;y++){
-      f0.push(func(x,y));
+      f0.push([x, y, func(x,y)]);
     }
   }
   return output;
+}
+
+const objsToMatrix = data => {
+  const output = [];
+  const [cMin, cMax] = d3.extent(data.map(s => s.expiration_date));
+  const [rMin, rMax] = d3.extent(data.map(s => s.expiration_date));
+  const s= dataFromFormular(cMin, cMax, rMin, rMax, (x, y) => 0);
+  console.log(s)
+  return s;
 }
 
 
@@ -38,19 +47,23 @@ d3.csv("/SPY.csv",
     console.log(calls)
     var surfaces=[
       {
-        name: 'Calls',
+        name: 'XY',
         data: dataFromFormular(-20, 20, -20, 20, (x,y) => {
-          return Math.random() > .5 ? x * y : 0;
+          return x*y;
         })
+      },
+      {
+        name: 'Calls',
+        data: objsToMatrix(calls)
       },
     ];
 
     var md=group.data([surfaces[0].data])
       .surface3D(width,height)
-      .surfaceHeight(function(d){ 
-        return d;
-      }).surfaceColor(function(d){
-        var c=d3.hsl((d+100), 0.6, 0.5).rgb();
+      .surfaceHeight(function([x, y, z]){ 
+        return z;
+      }).surfaceColor(function([x, y, z]){
+        var c=d3.hsl((z+100), 0.6, 0.5).rgb();
         return "rgb("+parseInt(c.r)+","+parseInt(c.g)+","+parseInt(c.b)+")";
       });
 
@@ -62,10 +75,10 @@ d3.csv("/SPY.csv",
       }).on('mousedown',function(){
         md.data([d3.select(this).datum().data]).surface3D()
           .transition().duration(500)
-          .surfaceHeight(function(d){
-            return d;
-          }).surfaceColor(function(d){
-            var c=d3.hsl((d+100), 0.6, 0.5).rgb();
+          .surfaceHeight(function([x, y, z]){ 
+            return z;
+          }).surfaceColor(function([x, y, z]){
+            var c=d3.hsl((z+100), 0.6, 0.5).rgb();
             return "rgb("+parseInt(c.r)+","+parseInt(c.g)+","+parseInt(c.b)+")";
           });
       });

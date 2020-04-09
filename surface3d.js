@@ -15,10 +15,10 @@
       var output=[];
       var xlength=data.length;
       var ylength=data[0].length;
-      for(var x=0;x<xlength;x++){
+      for(var r of data){
         output.push(t=[]);
-        for(var y=0;y<ylength;y++){
-          var value=heightFunction(data[x][y],x,y);
+        for(var c of r){
+          var value=heightFunction(c);
           t.push(value);
         }
       }
@@ -34,13 +34,19 @@
       var data=node.datum();
       if(!heightFunction) return [[]];
       var t, output=[];
-      var heights=getHeights();
+      // var heights=getHeights();
       var xlength=data.length;
       var ylength=data[0].length;
-      for(var x=0;x<xlength;x++){
+      const someConts = 5;
+      for(var r of data){
         output.push(t=[]);
-        for(var y=0;y<ylength;y++){
-          t.push(transformPoint([(x-xlength/2)/(xlength*1.41)*displayWidth*zoom, heights[x][y]*zoom, (y-ylength/2)/(ylength*1.41)*displayWidth*zoom]));
+        for(var c of r){
+          const [x, y, z] = c;
+          t.push(transformPoint([
+            (x-xlength/2)/(xlength*someConts)*displayWidth*zoom,
+            z*zoom,
+            (y-ylength/2)/(ylength*someConts)*displayWidth*zoom
+          ]));
         }
       }
       return output;
