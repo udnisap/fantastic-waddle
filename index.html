@@ -1,57 +1,17 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <style>
-      body{
-        font-family: sans;
-        padding: 10px;
-      }
-      svg path{
-        stroke: #000;
-        stroke-width: 1px;
-        stroke: rgba(0,0,0,0.2);
-      }
-      svg{
-        border: 1px solid #DED8BF;
-        background-color: #f4f4d9;
-        width: 700px;
-        height: 400px;
-      }
-      h1{
-        font-weight: normal;
-        margin: 0;
-        padding-left: 5px;
-        color: #53483e;
-      }
-      p{
-        margin: 0;
-        margin-bottom: 10px;
-        padding-left: 5px;
-        color: #917e6b;
-      }
-      ul{
-        width: 200px;
-        float: left;
-        list-style-type: none;
-        margin: 0;
-        padding: 0;
-        padding-right: 10px;
-      }
-      li{
-        cursor: pointer;
-        background-color: #c8ad93;
-        padding: 10px;
-        margin: 2px;
-        color: #fff;
-      }
-    </style>
-  </head>
-  <body>
-    <h1>D3.js Surface Plots</h1>
-    <p>Drag graph to change view</p>
-    <script src="https://d3js.org/d3.v3.min.js"></script>
-    <script src="script.js"></script>
-    <script src="init.js"></script>
-  </body>
-</html>
+<meta charset="utf-8">
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://unpkg.com/d3-3d/build/d3-3d.min.js"></script>
+<body>
+<svg width="960" height="500"></svg>
+<style type="text/css">
+button {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+}
+</style>
+<button>update</button>
+<script src="script.js"></script>
+<script src="init.js"></script>
+</body>

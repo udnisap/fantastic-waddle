@@ -1,86 +1,25 @@
 
-var yaw=0.5,pitch=0.5, width=700, height=400, drag=false;
-
-function dataFromFormular(func){
-  var output=[];
-  for(var x=-20;x<20;x++){
-    var f0=[];            
-    output.push(f0);
-    for(var y=-20;y<20;y++){
-      f0.push(func(x,y));
+function init(){
+  var cnt = 0;
+  xGrid = [], scatter = [], yLine = [];
+  for(var z = -j; z < j; z++){
+    for(var x = -j; x < j; x++){
+      xGrid.push([x, 1, z]);
+      scatter.push({x: x, y: d3.randomUniform(0, -10)(), z: z, id: 'point_' + cnt++});
     }
-    output.push()
   }
-  return output;
+
+  d3.range(-1, 11, 1).forEach(function(d){ yLine.push([-j, -d, -j]); });
+
+  var data = [
+    grid3d(xGrid),
+    point3d(scatter),
+    yScale3d([yLine])
+  ];
+  processData(data, 1000);
 }
 
-var surfaces=[
-  {
-    name: 'Dataset 1',
-    data: dataFromFormular(function(x,y){
-      return Math.sin(Math.sqrt(x*x+y*y)/5*Math.PI)*50;
-    })
-  },
-  {
-    name: 'Dataset 2',
-    data: dataFromFormular(function(x,y){
-      return Math.cos(x/15*Math.PI)*Math.cos(y/15*Math.PI)*60+Math.cos(x/8*Math.PI)*Math.cos(y/10*Math.PI)*40;
-    })
-  },
-  {
-    name: 'Dataset 3',
-    data: dataFromFormular(function(x,y){
-      return -(Math.cos(Math.sqrt(x*x+y*y)/6*Math.PI)+1)*300/(Math.pow(x*x+y*y+1,0.3)+1)+50;
-    })
-  }
-];
-var selected=surfaces[0];
 
-var ul=d3.select('body')
-  .append('ul');
-var svg=d3.select('body')
-  .append('svg')
-  .attr('height',height)
-  .attr('width',width);
+d3.selectAll('button').on('click', init);
 
-var group = svg.append("g");
-
-var md=group.data([surfaces[0].data])
-  .surface3D(width,height)
-  .surfaceHeight(function(d){ 
-    return d;
-  }).surfaceColor(function(d){
-    var c=d3.hsl((d+100), 0.6, 0.5).rgb();
-    return "rgb("+parseInt(c.r)+","+parseInt(c.g)+","+parseInt(c.b)+")";
-  });
-
-// ul.selectAll('li')
-//   .data(surfaces)
-//   .enter().append('li')
-//   .html(function(d){
-//     return d.name
-//   }).on('mousedown',function(){
-    md.data([surfaces[0].data]).surface3D()
-      .transition().duration(500)
-      .surfaceHeight(function(d){
-        console.log(d)
-        return d;
-      }).surfaceColor(function(d){
-        var c=d3.hsl((d+100), 0.6, 0.5).rgb();
-        return "rgb("+parseInt(c.r)+","+parseInt(c.g)+","+parseInt(c.b)+")";
-      });
-  // });
-
-svg.on("mousedown",function(){
-  drag=[d3.mouse(this),yaw,pitch];
-}).on("mouseup",function(){
-  drag=false;
-}).on("mousemove",function(){
-  if(drag){            
-    var mouse=d3.mouse(this);
-    yaw=drag[1]-(mouse[0]-drag[0][0])/50;
-    pitch=drag[2]+(mouse[1]-drag[0][1])/50;
-    pitch=Math.max(-Math.PI/2,Math.min(Math.PI/2,pitch));
-    md.turntable(yaw,pitch);
-  }
-});
+init();

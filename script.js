@@ -1,140 +1,143 @@
-(function(){
-  var Surface=function(node){
-    var heightFunction,colorFunction,timer,timer,transformPrecalc=[];
-    var displayWidth=300, displayHeight=300, zoom=1;
-    var trans;
+var origin = [480, 300], j = 10, scale = 20, scatter = [], yLine = [], xGrid = [], beta = 0, alpha = 0, key = function(d){ return d.id; }, startAngle = Math.PI/4;
+var svg    = d3.select('svg').call(d3.drag().on('drag', dragged).on('start', dragStart).on('end', dragEnd)).append('g');
+var color  = d3.scaleOrdinal(d3.schemeCategory20);
+var mx, my, mouseX, mouseY;
 
+var grid3d = d3._3d()
+  .shape('GRID', 20)
+  .origin(origin)
+  .rotateY( startAngle)
+  .rotateX(-startAngle)
+  .scale(scale);
 
-    this.setZoom=function(zoomLevel){
-      zoom=zoomLevel;
-      if(timer) clearTimeout(timer);
-      timer=setTimeout(renderSurface);
-    };
-    var getHeights=function(){
-      var data=node.datum();
-      var output=[];
-      var xlength=data.length;
-      var ylength=data[0].length;
-      for(var x=0;x<xlength;x++){
-        output.push(t=[]);
-        for(var y=0;y<ylength;y++){
-          var value=heightFunction(data[x][y],x,y);
-          t.push(value);
-        }
-      }
-      return output;
-    };
-    var transformPoint=function(point){
-      var x=transformPrecalc[0]*point[0]+transformPrecalc[1]*point[1]+transformPrecalc[2]*point[2];
-      var y=transformPrecalc[3]*point[0]+transformPrecalc[4]*point[1]+transformPrecalc[5]*point[2];
-      var z=transformPrecalc[6]*point[0]+transformPrecalc[7]*point[1]+transformPrecalc[8]*point[2];
-      return [x,y,z];
-    };
-    var getTransformedData=function(data){
-      if(!heightFunction) return [[]];
-      var t, output=[];
-      var heights=getHeights();
-      var xlength=data.length;
-      var ylength=data[0].length;
-      for(var x=0;x<xlength;x++){
-        output.push(t=[]);
-        for(var y=0;y<ylength;y++){
-          t.push(transformPoint([(x-xlength/2)/(xlength*1.41)*displayWidth*zoom, heights[x][y]*zoom, (y-ylength/2)/(ylength*1.41)*displayWidth*zoom]));
-        }
-      }
-      return output;
-    };
-    var renderSurface=function(){
-      var originalData=node.datum();
-      var data=getTransformedData(node.datum());
-      var xlength=data.length;
-      var ylength=data[0].length;
-      var d0=[];
-      var idx=0;
-      for(var x=0;x<xlength-1;x++){
-        for(var y=0;y<ylength-1;y++){
-          var depth=data[x][y][2]+data[x+1][y][2]+data[x+1][y+1][2]+data[x][y+1][2];
-          d0.push({
-            path:
-            'M'+(data[x][y][0]+displayWidth/2).toFixed(10)+','+(data[x][y][1]+displayHeight/2).toFixed(10)+
-            'L'+(data[x+1][y][0]+displayWidth/2).toFixed(10)+','+(data[x+1][y][1]+displayHeight/2).toFixed(10)+
-            'L'+(data[x+1][y+1][0]+displayWidth/2).toFixed(10)+','+(data[x+1][y+1][1]+displayHeight/2).toFixed(10)+
-            'L'+(data[x][y+1][0]+displayWidth/2).toFixed(10)+','+(data[x][y+1][1]+displayHeight/2).toFixed(10)+'Z',
-            depth: depth, data: originalData[x][y]
-          });
-        }
-      }
-      d0.sort(function(a, b){return b.depth-a.depth});
-      var dr=node.selectAll('path').data(d0);
-      dr.enter().append("path");
-      if(trans){
-        dr=dr.transition().delay(trans.delay()).duration(trans.duration());
-      }
-      dr.attr("d",function(d){return d.path;});
-      if(colorFunction){
-        dr.attr("fill",function(d){return colorFunction(d.data)});
-      }
-      trans=false;
-    };
-    this.renderSurface=renderSurface;
-    this.setTurtable=function(yaw, pitch){
-      var cosA=Math.cos(pitch);
-      var sinA=Math.sin(pitch);
-      var cosB=Math.cos(yaw);
-      var sinB=Math.sin(yaw);
-      transformPrecalc[0]=cosB;
-      transformPrecalc[1]=0;
-      transformPrecalc[2]=sinB;
-      transformPrecalc[3]=sinA*sinB;
-      transformPrecalc[4]=cosA;
-      transformPrecalc[5]=-sinA*cosB;
-      transformPrecalc[6]=-sinB*cosA;
-      transformPrecalc[7]=sinA;
-      transformPrecalc[8]=cosA*cosB;
-      if(timer) clearTimeout(timer);
-      timer=setTimeout(renderSurface);
-      return this;
-    };
-    this.setTurtable(0.5,0.5);
-    this.surfaceColor=function(callback){
-      colorFunction=callback;
-      if(timer) clearTimeout(timer);
-      timer=setTimeout(renderSurface);
-      return this;
-    };
-    this.surfaceHeight=function(callback){
-      heightFunction=callback;
-      if(timer) clearTimeout(timer);
-      timer=setTimeout(renderSurface);
-      return this;
-    };
-    this.transition=function(){ 
-      var transition=d3.selection.prototype.transition.bind(node)();
-      colourFunction=null;
-      heightFunction=null;
-      transition.surfaceHeight=this.surfaceHeight;
-      transition.surfaceColor=this.surfaceColor;
-      trans=transition;
-      return transition;
-    };
-    this.setHeight=function(height){
-      if(height) displayHeight=height;
-    };
-    this.setWidth=function(width){
-      if(width) displayWidth=width;
-    };
-  };
+var point3d = d3._3d()
+  .x(function(d){ return d.x; })
+  .y(function(d){ return d.y; })
+  .z(function(d){ return d.z; })
+  .origin(origin)
+  .rotateY( startAngle)
+  .rotateX(-startAngle)
+  .scale(scale);
 
-  d3.selection.prototype.surface3D=function(width,height){
-    if(!this.node().__surface__) this.node().__surface__=new Surface(this);
-    var surface=this.node().__surface__;
-    this.turntable=surface.setTurtable;
-    this.surfaceColor=surface.surfaceColor;
-    this.surfaceHeight=surface.surfaceHeight;
-    this.zoom=surface.setZoom;
-    surface.setHeight(height);
-    surface.setWidth(width);
-    this.transition=surface.transition.bind(surface);
-    return this;
-  };            
-})();
+var yScale3d = d3._3d()
+  .shape('LINE_STRIP')
+  .origin(origin)
+  .rotateY( startAngle)
+  .rotateX(-startAngle)
+  .scale(scale);
+
+var xScale3d = d3._3d()
+  .shape('LINE_STRIP')
+  .origin(origin)
+  .rotateY( startAngle)
+  .rotateX(-startAngle)
+  .scale(scale);
+
+function processData(data, tt){
+
+  /* ----------- GRID ----------- */
+
+  var xGrid = svg.selectAll('path.grid').data(data[0], key);
+
+  xGrid
+    .enter()
+    .append('path')
+    .attr('class', '_3d grid')
+    .merge(xGrid)
+    .attr('stroke', 'black')
+    .attr('stroke-width', 0.3)
+    .attr('fill', function(d){ return d.ccw ? 'lightgrey' : '#717171'; })
+    .attr('fill-opacity', 0.9)
+    .attr('d', grid3d.draw);
+
+  xGrid.exit().remove();
+
+  /* ----------- POINTS ----------- */
+
+  var points = svg.selectAll('circle').data(data[1], key);
+
+  points
+    .enter()
+    .append('circle')
+    .attr('class', '_3d')
+    .attr('opacity', 0)
+    .attr('cx', posPointX)
+    .attr('cy', posPointY)
+    .merge(points)
+    .transition().duration(tt)
+    .attr('r', 3)
+    .attr('stroke', function(d){ return d3.color(color(d.id)).darker(3); })
+    .attr('fill', function(d){ return color(d.id); })
+    .attr('opacity', 1)
+    .attr('cx', posPointX)
+    .attr('cy', posPointY);
+
+  points.exit().remove();
+
+  /* ----------- y-Scale ----------- */
+
+  var yScale = svg.selectAll('path.yScale').data(data[2]);
+
+  yScale
+    .enter()
+    .append('path')
+    .attr('class', '_3d yScale')
+    .merge(yScale)
+    .attr('stroke', 'black')
+    .attr('stroke-width', .5)
+    .attr('d', yScale3d.draw);
+
+  yScale.exit().remove();
+
+  /* ----------- y-Scale Text ----------- */
+
+  var yText = svg.selectAll('text.yText').data(data[2][0]);
+
+  yText
+    .enter()
+    .append('text')
+    .attr('class', '_3d yText')
+    .attr('dx', '.3em')
+    .merge(yText)
+    .each(function(d){
+      d.centroid = {x: d.rotated.x, y: d.rotated.y, z: d.rotated.z};
+    })
+    .attr('x', function(d){ return d.projected.x; })
+    .attr('y', function(d){ return d.projected.y; })
+    .text(function(d){ return d[1] <= 0 ? d[1] : ''; });
+
+  yText.exit().remove();
+
+  d3.selectAll('._3d').sort(d3._3d().sort);
+}
+
+function posPointX(d){
+  return d.projected.x;
+}
+
+function posPointY(d){
+  return d.projected.y;
+}
+
+function dragStart(){
+  mx = d3.event.x;
+  my = d3.event.y;
+}
+
+function dragged(){
+  mouseX = mouseX || 0;
+  mouseY = mouseY || 0;
+  beta   = (d3.event.x - mx + mouseX) * Math.PI / 230 ;
+  alpha  = (d3.event.y - my + mouseY) * Math.PI / 230  * (-1);
+  var data = [
+    grid3d.rotateY(beta + startAngle).rotateX(alpha - startAngle)(xGrid),
+    point3d.rotateY(beta + startAngle).rotateX(alpha - startAngle)(scatter),
+    yScale3d.rotateY(beta + startAngle).rotateX(alpha - startAngle)([yLine]),
+  ];
+  processData(data, 0);
+}
+
+function dragEnd(){
+  mouseX = d3.event.x - mx + mouseX;
+  mouseY = d3.event.y - my + mouseY;
+}
