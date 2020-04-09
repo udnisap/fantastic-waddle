@@ -19,7 +19,21 @@ function init(){
   processData(data, 1000);
 }
 
-
 d3.selectAll('button').on('click', init);
+const now = moment();
+d3.csv("/SPY.csv",
+  data => {
+    const calls = data
+      .filter(d => !!d.expiration_date)
+      .filter(d => d.type === 'call')
+      .map(i => ({
+        id: i.id,
+        expiration_date: moment(i.expiration_date, 'l').diff(now, 'days'),
+        strike_price: i.strike_price,
+        ask_price: i.ask_price,
+        bid_price: i.bid_price
+      }));
+    console.log(calls)
+  });
 
 init();

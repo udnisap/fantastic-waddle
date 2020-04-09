@@ -65,7 +65,7 @@ function processData(data, tt){
     .attr('cy', posPointY)
     .merge(points)
     .transition().duration(tt)
-    .attr('r', 3)
+    .attr('r', 5)
     .attr('stroke', function(d){ return d3.color(color(d.id)).darker(3); })
     .attr('fill', function(d){ return color(d.id); })
     .attr('opacity', 1)
