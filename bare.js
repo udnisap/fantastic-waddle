@@ -4,7 +4,9 @@ var ul=d3.select('body')
 var svg=d3.select('body')
   .append('svg')
   .attr('height',height)
-  .attr('width',width);
+  .attr('width',width)
+  .attr('xmlns','http://www.w3.org/2000/svg')
+  .attr('xmlns:xlink','http://www.w3.org/1999/xlink')
 
 
 var group = svg.append("g");
@@ -46,9 +48,39 @@ d3.csv("/SPY.csv",
     // console.log(calls)
     var surfaces=[
       {
+        name: 'Flower',
+        data: dataFromFormular(-20, 20, -20, 20, (x,y) => {
+          return Math.sin(Math.sqrt(x*x+y*y)/5*Math.PI)*50;
+        })
+      },
+      {
+        name: 'Steps',
+        data: dataFromFormular(-20, 20, -20, 20, (x,y) => {
+          if (x > 0 && y > 0) {
+            return 5;
+          } 
+          if (x < 0 && y > 0) {
+            return 10;
+          } 
+          if (x > 0 && y < 0) {
+            return -5;
+          } 
+          if (x < 0 && y < 0) {
+            return -10;
+          } 
+          return 0;
+        })
+      },
+      {
         name: 'XY',
         data: dataFromFormular(-20, 20, -20, 20, (x,y) => {
           return x*y;
+        })
+      },
+      {
+        name: '5',
+        data: dataFromFormular(-20, 20, -20, 20, (x,y) => {
+          return 5;
         })
       },
       // {
@@ -59,7 +91,7 @@ d3.csv("/SPY.csv",
 
     var md=group.data([surfaces[0].data])
       .surface3D(width,height)
-      .surfaceHeight(function([x, y, z]){ 
+      .surfaceHeight(function(z){ 
         return z;
       }).surfaceColor(function(z){
         var c=d3.hsl((z+100), 0.6, 0.5).rgb();
