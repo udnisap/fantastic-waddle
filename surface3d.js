@@ -30,36 +30,47 @@
       var z=transformPrecalc[6]*point[0]+transformPrecalc[7]*point[1]+transformPrecalc[8]*point[2];
       return [x,y,z];
     };
-    var getTransformedData=function(){
-      var data=node.datum();
+    var getTransformedData=function(data, xValues, yValues){
       if(!heightFunction) return [[]];
-      var t, output=[];
+      var t, output={};
+      const originaOutput = {}
       // var heights=getHeights();
-      var xlength=data.length;
-      var ylength=data[0].length;
+
+
+      const xlength = xValues.length;
+      const ylength = yValues.length;
       const someConts = 5;
-      for(var r of data){
-        output.push(t=[]);
-        for(var c of r){
-          const [x, y, z] = c;
-          t.push(transformPoint([
-            (x-xlength/2)/(xlength*someConts)*displayWidth*zoom,
-            z*zoom,
-            (y-ylength/2)/(ylength*someConts)*displayWidth*zoom
-          ]));
-        }
-      }
-      return output;
+
+      data.forEach(([x, y, z]) => {
+        output[x] = output[x] || {};
+        originaOutput[x] = originaOutput[x] || {};
+        originaOutput[x][y] = z;
+        output[x][y] = (transformPoint([
+          (x-xlength/2)/(xlength*someConts)*displayWidth*zoom,
+          z*zoom,
+          (y-ylength/2)/(ylength*someConts)*displayWidth*zoom
+        ]));
+      })
+      return [output, originaOutput];
     };
     var renderSurface=function(){
       var originalData=node.datum();
-      var data=getTransformedData();
-      var xlength=data.length;
-      var ylength=data[0].length;
-      var d0=[];
+      const xValues = Array.from(new Set(originalData.map(([x]) => x)))
+        .sort((a, b) => a- b);
+
+      const yValues = Array.from(new Set(originalData.map(([,x]) => x)))
+        .sort((a, b) => a- b);
+
+      var [data, original]=getTransformedData(originalData, xValues, yValues);
       var idx=0;
-      for(var x=0;x<xlength-1;x++){
-        for(var y=0;y<ylength-1;y++){
+      let d0 = []
+
+
+      const someConts = 5;
+      for(var xx=0;xx<xValues.length-1;xx++){
+        for(var yy=0;yy<yValues.length-1;yy++){
+          const x = (xValues[xx]);
+          const y = (yValues[yy]);
           var depth=data[x][y][2]+data[x+1][y][2]+data[x+1][y+1][2]+data[x][y+1][2];
           d0.push({
             path:
@@ -67,7 +78,7 @@
             'L'+(data[x+1][y][0]+displayWidth/2).toFixed(10)+','+(data[x+1][y][1]+displayHeight/2).toFixed(10)+
             'L'+(data[x+1][y+1][0]+displayWidth/2).toFixed(10)+','+(data[x+1][y+1][1]+displayHeight/2).toFixed(10)+
             'L'+(data[x][y+1][0]+displayWidth/2).toFixed(10)+','+(data[x][y+1][1]+displayHeight/2).toFixed(10)+'Z',
-            depth: depth, data: originalData[x][y]
+            depth: depth, data: original[x][y]
           });
         }
       }
