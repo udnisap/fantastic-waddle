@@ -1,4 +1,3 @@
-
 function init(){
   var cnt = 0;
   xGrid = [], scatter = [], yLine = [];

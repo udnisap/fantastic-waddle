@@ -44,9 +44,9 @@
       dr.enter()
         .append("path").attr('class', 'axis').attr('id', ({ label }) => label)
 
-      dr.enter()
-        .append('text').attr('font-family',"Verdana").attr('font-size',"42.5").attr('fill',"blue")
-        .append('textPath').attr('xlink:href', ({ label })=> "#" + label).text(({ label }) => label )
+      // dr.enter()
+      //   .append('text').attr('font-family',"Verdana").attr('font-size',"42.5").attr('fill',"blue")
+      //   .append('textPath').attr('xlink:href', ({ label })=> "#" + label).text(({ label }) => label )
       if(trans){
         dr=dr.transition().delay(trans.delay()).duration(trans.duration());
       }
@@ -61,20 +61,24 @@
         for(var yy=0;yy<yValues.length-1;yy++){
           const x = (xValues[xx]);
           const y = (yValues[yy]);
-          var depth=data[x][y][2]+data[x+1][y][2]+data[x+1][y+1][2]+data[x][y+1][2];
+          const x1 = (xValues[xx + 1]);
+          const y1 = (yValues[yy + 1]);
+          var depth=data[x][y][2]+data[x1][y][2]+data[x1][y1][2]+data[x][y1][2];
           d0.push({
             path:
             'M'+(data[x][y][0]+displayWidth/2).toFixed(10)+','+(data[x][y][1]+displayHeight/2).toFixed(10)+
-            'L'+(data[x+1][y][0]+displayWidth/2).toFixed(10)+','+(data[x+1][y][1]+displayHeight/2).toFixed(10)+
-            'L'+(data[x+1][y+1][0]+displayWidth/2).toFixed(10)+','+(data[x+1][y+1][1]+displayHeight/2).toFixed(10)+
-            'L'+(data[x][y+1][0]+displayWidth/2).toFixed(10)+','+(data[x][y+1][1]+displayHeight/2).toFixed(10)+'Z',
-            depth: depth, data: original[x][y]
+            'L'+(data[x1][y][0]+displayWidth/2).toFixed(10)+','+(data[x1][y][1]+displayHeight/2).toFixed(10)+
+            'L'+(data[x1][y1][0]+displayWidth/2).toFixed(10)+','+(data[x1][y1][1]+displayHeight/2).toFixed(10)+
+            'L'+(data[x][y1][0]+displayWidth/2).toFixed(10)+','+(data[x][y1][1]+displayHeight/2).toFixed(10)+'Z',
+            depth: depth, data: original[x][y],
+            x, y
           });
         }
       }
       d0.sort(function(a, b){return b.depth-a.depth});
-      var dr=node.selectAll('path.graph').data(d0);
+      var dr=node.selectAll('path.graph').data(d0, ({ x, y}) => `${x}:${y}`);
       dr.enter().append("path").attr('class', 'graph')
+      dr.exit().remove()
       if(trans){
         dr=dr.transition().delay(trans.delay()).duration(trans.duration());
       }
@@ -200,3 +204,6 @@
     return this;
   };            
 })();
+
+
+
