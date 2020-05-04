@@ -13,6 +13,29 @@
     }
   </style>
 <div id="my_dataviz"></div>
+<script>
+  var margin = {top: 80, right: 25, bottom: 30, left: 40},
+    width = 4*window.innerWidth - margin.left - margin.right,
+    height =window.innerHeight - margin.top - margin.bottom;
+
+  var svg = d3.select("#my_dataviz")
+    .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform",
+      "translate(" + margin.left + "," + margin.top + ")");
+
+  svg.append("g")
+    .attr('class', 'X')
+    .style("font-size", 15)
+    .attr("transform", "translate(0," + height + ")")
+
+  svg.append("g")
+    .attr('class', 'Y')
+    .style("font-size", 15)
+
+</script>
 <script src="./options-heatmap.js"></script>
 <script>
   const loadJS = function(url){
@@ -22,6 +45,7 @@
   };
   const urlParams = new URLSearchParams(window.location.search);
   const file = urlParams.get('file');
+
   if(file) {
     loadJS(`${file}.js`);
   }

@@ -1,4 +1,6 @@
-fetch( "https://api.tdameritrade.com/v1/marketdata/chains?apikey=DUK17TRKRULCUWO0DLQZ0KI2OUYBHY6H&symbol=SPY&contractType=CALL&strategy=VERTICAL", {
+const symbol = urlParams.get('symbol');
+const type = urlParams.get('type');
+fetch( `https://api.tdameritrade.com/v1/marketdata/chains?apikey=DUK17TRKRULCUWO0DLQZ0KI2OUYBHY6H&symbol=${symbol}&contractType=${type}&strategy=VERTICAL&range=ALL`, {
   headers: { 'Authorization': ''}
 })
   .then(data => data.json())
@@ -19,15 +21,17 @@ fetch( "https://api.tdameritrade.com/v1/marketdata/chains?apikey=DUK17TRKRULCUWO
   .then(data => console.log(data) || data)
   .then(data => {
     const xGroup = Array.from(new Set(data.map(s => s.x))).sort((a, b) => {
-      const aa = parseFloat(a.split('/')[1]);
-      const bb = parseFloat(b.split('/')[1]);
-      return aa -bb;
+      const aa = parseFloat(a.split('/')[0]);
+      const bb = parseFloat(b.split('/')[0]);
+      if (aa -bb === 0) {
+        const aaa = parseFloat(a.split('/')[1]);
+        const bbb = parseFloat(b.split('/')[1]);
+        return aaa- bbb;
+      } else {
+        return aa - bb;
+      }
     })
-    draw(data, xGroup)
+    const hightlightX =[ '285.0/290.0'];
+    draw(data, {xGroup, hightlightX})
   });
-
-var margin = {top: 80, right: 25, bottom: 30, left: 40},
-  width = 4*window.innerWidth - margin.left - margin.right,
-  height =window.innerHeight - margin.top - margin.bottom;
-
 

@@ -1,4 +1,6 @@
-fetch( "https://api.tdameritrade.com/v1/marketdata/chains?apikey=DUK17TRKRULCUWO0DLQZ0KI2OUYBHY6H&symbol=SPY&contractType=CALL", {
+const symbol = urlParams.get('symbol');
+const type = urlParams.get('type');
+fetch( `https://api.tdameritrade.com/v1/marketdata/chains?apikey=DUK17TRKRULCUWO0DLQZ0KI2OUYBHY6H&symbol=${symbol}&contractType=${type}`, {
   headers: { 'Authorization': ''}
 })
   .then(data => data.json())
@@ -7,7 +9,8 @@ fetch( "https://api.tdameritrade.com/v1/marketdata/chains?apikey=DUK17TRKRULCUWO
       .flatMap(c => Object.values(c).map(d => d[0]))
       .map(s => ({
         ...s,
-        value: s.bid,
+        value: s.ask - s.bid,
+        value: s.volatility,
         // value: s.openInterest,
         // value: s.totalVolume === 0 ? 0 : parseInt(s.openInterest)/parseFloat(s.totalVolume),
         x: parseFloat(s.strikePrice),
@@ -15,10 +18,8 @@ fetch( "https://api.tdameritrade.com/v1/marketdata/chains?apikey=DUK17TRKRULCUWO
       }))
   )
   .then(data => console.log(data) || data)
-  .then(data => draw(data) );
-
-var margin = {top: 80, right: 25, bottom: 30, left: 40},
-  width = 4*window.innerWidth - margin.left - margin.right,
-  height =window.innerHeight - margin.top - margin.bottom;
-
+  .then(data => {
+		const hightlightX =[300]
+		draw(data, { hightlightX }) 
+});
 

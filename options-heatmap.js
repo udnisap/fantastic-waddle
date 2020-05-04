@@ -1,13 +1,6 @@
 
-const draw = function(data, xGroup, yGroup) {
-// append the svg object to the body of the page
-var svg = d3.select("#my_dataviz")
-  .append("svg")
-  .attr("width", width + margin.left + margin.right)
-  .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-  .attr("transform",
-    "translate(" + margin.left + "," + margin.top + ")");
+const draw = function(data, {hightlightX =[], xGroup, yGroup}) {
+  // append the svg object to the body of the page
   //Read the data
   xGroup = xGroup || Array.from(new Set(data.map(s => s.x))).sort((a,b) => a -b)
   yGroup = yGroup || Array.from(new Set(data.map(s => s.y))).sort((a,b) => a -b)
@@ -18,9 +11,7 @@ var svg = d3.select("#my_dataviz")
     .domain(xGroup)
     .padding(0.05);
 
-  svg.append("g")
-    .style("font-size", 15)
-    .attr("transform", "translate(0," + height + ")")
+  svg.select('g.X')
     .call(d3.axisBottom(x).tickSize(0))
     .select(".domain").remove()
 
@@ -30,8 +21,7 @@ var svg = d3.select("#my_dataviz")
     .domain(yGroup)
     .padding(0.05);
 
-  svg.append("g")
-    .style("font-size", 15)
+  svg.select('g.Y')
     .call(d3.axisLeft(y).tickSize(0))
     .select(".domain").remove()
 
@@ -70,15 +60,22 @@ var svg = d3.select("#my_dataviz")
     tooltip
       .style("opacity", 0)
     d3.select(this)
-      .style("stroke", "none")
+      .style("stroke", d => hightlightX.indexOf(d.x) >= 0 ? 'red' : 'none')
       .style("opacity", 0.8)
   }
 
   // add the squares
-  svg.selectAll()
-    .data(data, function(d) {return d.x+':'+d.y;})
+  const sqrs = svg.selectAll('rect')
+    .data(data, function(d) {return d.x+':'+d.y;});
+
+  sqrs
+    .exit()
+    .remove();
+
+  sqrs
     .enter()
     .append("rect")
+    .merge(sqrs)
     .attr("x", function(d) { return x(d.x) })
     .attr("y", function(d) { return y(d.y) })
     .attr("rx", 4)
@@ -87,11 +84,12 @@ var svg = d3.select("#my_dataviz")
     .attr("height", y.bandwidth() )
     .style("fill", function(d) { return myColor(d.value)} )
     .style("stroke-width", 4)
-    .style("stroke", "none")
+    .style("stroke", d => hightlightX.indexOf(d.x) >= 0 ? 'red' : 'none')
     .style("opacity", 0.8)
     .on("mouseover", mouseover)
     .on("mousemove", mousemove)
     .on("mouseleave", mouseleave)
+
 }
 
 // {
