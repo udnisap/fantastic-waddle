@@ -1,5 +1,5 @@
 
-const draw = function(data) {
+const draw = function(data, xGroup, yGroup) {
 // append the svg object to the body of the page
 var svg = d3.select("#my_dataviz")
   .append("svg")
@@ -9,13 +9,13 @@ var svg = d3.select("#my_dataviz")
   .attr("transform",
     "translate(" + margin.left + "," + margin.top + ")");
   //Read the data
-  const expirations = Array.from(new Set(data.map(s => s.expirationDate)));
-  const strikes = Array.from(new Set(data.map(s => s.strikePrice))).sort((a, b) => a -b)
+  xGroup = xGroup || Array.from(new Set(data.map(s => s.x))).sort((a,b) => a -b)
+  yGroup = yGroup || Array.from(new Set(data.map(s => s.y))).sort((a,b) => a -b)
 
   // Build X scales and axis:
   var x = d3.scaleBand()
     .range([ 0, width ])
-    .domain(strikes)
+    .domain(xGroup)
     .padding(0.05);
 
   svg.append("g")
@@ -27,7 +27,7 @@ var svg = d3.select("#my_dataviz")
   // Build Y scales and axis:
   var y = d3.scaleBand()
     .range([ height, 0 ])
-    .domain(expirations)
+    .domain(yGroup)
     .padding(0.05);
 
   svg.append("g")
@@ -62,7 +62,7 @@ var svg = d3.select("#my_dataviz")
   }
   var mousemove = function(d) {
     tooltip
-      .html(`Value: ${d.value} <br/> Options : ${d.description} <br/> Expiration: ${d.expirationDate} days  <br/><pre>${JSON.stringify(d, null, 2)}</pre>`)
+      .html(`Value: ${d.value} <br/> Y : ${d.y} days <br/> X: ${d.x} <br/><pre>${JSON.stringify(d, null, 2)}</pre>`)
       .style("left", (d3.mouse(this)[0]+70) + "px")
       .style("top", (d3.mouse(this)[1]) + "px")
   }
@@ -76,11 +76,11 @@ var svg = d3.select("#my_dataviz")
 
   // add the squares
   svg.selectAll()
-    .data(data, function(d) {return d.expirationDate+':'+d.strikePrice;})
+    .data(data, function(d) {return d.x+':'+d.y;})
     .enter()
     .append("rect")
-    .attr("x", function(d) { return x(d.strikePrice) })
-    .attr("y", function(d) { return y(d.expirationDate) })
+    .attr("x", function(d) { return x(d.x) })
+    .attr("y", function(d) { return y(d.y) })
     .attr("rx", 4)
     .attr("ry", 4)
     .attr("width", x.bandwidth() )
