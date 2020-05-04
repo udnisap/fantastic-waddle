@@ -12,10 +12,13 @@
       transform: rotateZ(90deg)
     }
   </style>
+<ul></ul>
 <div id="my_dataviz"></div>
 <script>
+  var ul=d3.select('ul')
+
   var margin = {top: 80, right: 25, bottom: 30, left: 40},
-    width = 4*window.innerWidth - margin.left - margin.right,
+    width = window.innerWidth - margin.left - margin.right,
     height =window.innerHeight - margin.top - margin.bottom;
 
   var svg = d3.select("#my_dataviz")
@@ -34,6 +37,25 @@
   svg.append("g")
     .attr('class', 'Y')
     .style("font-size", 15)
+
+svg.append("text")
+        .attr("x", 0)
+        .attr("y", -50)
+        .attr('class', 'header')
+        .attr("text-anchor", "left")
+        .style("font-size", "22px")
+        .text("");
+
+// Add subtitle to graph
+svg.append("text")
+        .attr("x", 0)
+        .attr("y", -20)
+        .attr('class', 'sub')
+        .attr("text-anchor", "left")
+        .style("font-size", "14px")
+        .style("fill", "grey")
+        .style("max-width", 400)
+        .text("");
 
 </script>
 <script src="./options-heatmap.js"></script>
