@@ -17,6 +17,7 @@ const showHeatMapFor = (symbol, type, fn) => {
       const hightlightX =[closest(resp.underlyingPrice, data.map(s => s.strikePrice))];
       draw(data, { hightlightX });
       svg.select('text.sub').text(`Stock: $${resp.underlyingPrice} Vol: ${resp.volatility}`);
+      document.title = resp.symbol;
     });
 }
 
@@ -38,13 +39,15 @@ const options = [
   { name: 'Bid Ask Spread', fn: s => s.ask - s.bid },
   { name: 'Open Interest', fn: s => s.openInterest },
   { name: 'Volume', fn: s => s.totalVolume },
+  { name: 'Mark', fn: s => s.mark },
+  { name: 'Unusual', fn: s => s.openInterest === 0 ? 0: s.totalVolume / s.openInterest },
 ];
 
 ul.selectAll('li')
   .data(options)
   .enter().append('li')
   .html(d => d.name)
-  .on('mousedown',d => {
+  .on('click',d => {
     showHeatMapFor(symbol, type, d.fn);
     svg.select('text.header').text(d.name);
   });
