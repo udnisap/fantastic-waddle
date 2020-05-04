@@ -4,8 +4,9 @@ fetch( `https://api.tdameritrade.com/v1/marketdata/chains?apikey=DUK17TRKRULCUWO
   headers: { 'Authorization': ''}
 })
   .then(data => data.json())
-  .then(data => ({ ...data.callExpDateMap, ...data.putExpDateMap }))
-  .then(data => Object.values(data)
+  .then(data => ({ underlyingPrice: data.underlyingPrice, entires: {...data.callExpDateMap, ...data.putExpDateMap }}))
+  .then(resp => {
+    const data = Object.values(resp.entires)
       .flatMap(c => Object.values(c).map(d => d[0]))
       .map(s => ({
         ...s,
@@ -16,10 +17,20 @@ fetch( `https://api.tdameritrade.com/v1/marketdata/chains?apikey=DUK17TRKRULCUWO
         x: parseFloat(s.strikePrice),
         y: s.daysToExpiration
       }))
-  )
-  .then(data => console.log(data) || data)
-  .then(data => {
-		const hightlightX =[300]
-		draw(data, { hightlightX }) 
-});
+    const hightlightX =[closest(resp.underlyingPrice, data.map(s => s.strikePrice))];
+    draw(data, { hightlightX });
+  });
+
+function closest(num, arr) {
+  var curr = arr[0];
+  var diff = Math.abs (num - curr);
+  for (var val = 0; val < arr.length; val++) {
+    var newdiff = Math.abs (num - arr[val]);
+    if (newdiff < diff) {
+      diff = newdiff;
+      curr = arr[val];
+    }
+  }
+  return curr;
+}
 
