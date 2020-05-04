@@ -17,7 +17,7 @@ const draw = function(data, {hightlightX =[], xGroup, yGroup}) {
 
   // Build Y scales and axis:
   var y = d3.scaleBand()
-    .range([ height, 0 ])
+    .range([ height -50, 0 ])
     .domain(yGroup)
     .padding(0.05);
 
