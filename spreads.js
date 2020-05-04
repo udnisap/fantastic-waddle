@@ -47,6 +47,8 @@ function closest(num, arr) {
 }
 const options = [
   { name: 'Bid Ask Spread', fn: s => s.strategyAsk - s.strategyBid },
+  { name: 'Bid', fn: s => s.strategyBid },
+  { name: 'Ask', fn: s => s.strategyAsk },
 ];
 
 ul.selectAll('li')

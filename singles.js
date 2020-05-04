@@ -41,6 +41,7 @@ const options = [
   { name: 'Volume', fn: s => s.totalVolume },
   { name: 'Mark', fn: s => s.mark },
   { name: 'Unusual', fn: s => s.openInterest === 0 ? 0: s.totalVolume / s.openInterest },
+  { name: 'Overpriced', fn: s => s.theoreticalOptionValue - s.bid},
 ];
 
 ul.selectAll('li')
