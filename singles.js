@@ -16,7 +16,7 @@ const showHeatMapFor = (symbol, type, map, filter = s => s) => {
           x: parseFloat(s.strikePrice),
           y: s.daysToExpiration
         }))
-      console.log(data);
+      console.log(data.reduce((a, s) => ({ ...a, [s.putCall + s.daysToExpiration]: s}), {}));
       const hightlightX =[closest(resp.underlyingPrice, data.map(s => s.strikePrice))];
       draw(data, { hightlightX });
       svg.select('text.sub').text(`Stock: $${resp.underlyingPrice} Vol: ${resp.volatility}`);
@@ -48,7 +48,7 @@ const options = [
   { name: 'Overpriced (To Sell)', map: s => s.bid - s.theoreticalOptionValue},
   { name: 'Pain',
     map: (s, { underlyingPrice })=> s.bid * s.openInterest * Math.abs(s.strikePrice - underlyingPrice),
-    filter: (s, { underlyingPrice }) => s.putCall === 'PUT' ? s.strikePrice< underlyingPrice : underlyingPrice  > s.strikePrice
+    filter: (s, { underlyingPrice }) => s.putCall === 'CALL' ? s.strikePrice< underlyingPrice : underlyingPrice  > s.strikePrice
   }
 ];
 
@@ -57,7 +57,7 @@ ul.selectAll('li')
   .enter().append('li')
   .html(d => d.name)
   .on('click',d => {
-    showHeatMapFor(symbol, type, d.map);
+    showHeatMapFor(symbol, type, d.map, d.filter);
     svg.select('text.header').text(d.name);
   });
 

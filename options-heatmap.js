@@ -39,14 +39,30 @@ const draw = function(data, {hightlightX =[], xGroup, yGroup} = {}) {
       .style("opacity", 1)
   }
   var mousemove = function(d) {
+    const hideFields = new Set(['x', 'y', 'value', 'isIndexOption', 'deliverableNote', 'multiplier', 'optionDeliverablesList' ]);
+    const values = Object.keys(d)
+      .filter(s => !hideFields.has(s))
+      .flatMap(s =>  d[s] instanceof Object ?
+        Object.keys(d[s]).map(k => ({ key: [s +'.' + k], val: d[s][k]})) :
+        ({ key: s, val: d[s]})
+      );
     tooltip
-      .html(`Value: ${d.value} <br/> Y : ${d.y} days <br/> X: ${d.x} <br/><pre>${JSON.stringify(d, null, 2)}</pre>`)
-      .style("left", (d3.mouse(this)[0]+70) + "px")
-      .style("top", (d3.mouse(this)[1]) + "px")
+      // .html(`Value: ${d.value} <br/> Y : ${d.y} days <br/> X: ${d.x} <br/><pre>${JSON.stringify(d, null, 2)}</pre>`)
+      .html(`
+    <div class="card ">
+    <div class="card-body">
+        <h5 class="card-title"> Value: ${d.value.toFixed(2)}  at (x: ${d.x}, y: ${d.y})</h5>
+      <ul class="list-group list-group-flush flex-wrap d-flex flex-row bd-highlight mb-5">
+        ${values.map(v => '<li class="list-group-item d-flex justify-content-between align-items-center">'+v.key + '<span class="badge badge-pill">' + v.val + '</span></li>')}
+      </ul>
+    </div>
+    </div>
+    `)
+      // .style("left", (d3.mouse(this)[0]+70) + "px")
+      // .style("top", (d3.mouse(this)[1]) + "px")
   }
   var mouseleave = function(d) {
     tooltip
-      .style("opacity", 0)
     d3.select(this)
       .style("stroke", d => hightlightX.indexOf(d.x) >= 0 ? 'red' : 'none')
       .style("opacity", 0.8)

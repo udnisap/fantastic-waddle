@@ -6,14 +6,20 @@
  <script src="https://d3js.org/d3.v5.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
 <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
 <body>
   <style>
     g.X .tick text{
       transform: rotateZ(90deg)
     }
+    .list-group-item {
+       width: 300px;
+    }
   </style>
 <ul></ul>
-<div id="my_dataviz"></div>
+<div id="my_dataviz">
+
+</div>
 <script>
   var ul=d3.select('ul')
 
@@ -54,7 +60,11 @@ svg.append("text")
     .style("background-color", "white")
     .style("border", "solid")
     .style("border-width", "2px")
-    .style("position", "absolute")
+    .style("position", "fixed")
+    .style("top", "0px")
+    .style("right", "0px")
+    .style("width", "90%")
+    .style("height", "250px")
     .style("border-radius", "5px")
     .style("padding", "5px")
 
