@@ -1,5 +1,5 @@
 
-const draw = function(data, {hightlightX =[], xGroup, yGroup}) {
+const draw = function(data, {hightlightX =[], xGroup, yGroup} = {}) {
   // append the svg object to the body of the page
   //Read the data
   xGroup = xGroup || Array.from(new Set(data.map(s => s.x))).sort((a,b) => a -b)
