@@ -1,5 +1,5 @@
 
-const draw = function(data, {hightlightX =[], xGroup, yGroup} = {}) {
+const draw = function(data, {hightlightX =[], xGroup, yGroup, perRow} = {}) {
   // append the svg object to the body of the page
   //Read the data
   xGroup = xGroup || Array.from(new Set(data.map(s => s.x))).sort((a,b) => a -b)
@@ -26,6 +26,10 @@ const draw = function(data, {hightlightX =[], xGroup, yGroup} = {}) {
     .select(".domain").remove()
 
   // Build color scale
+  const colorForY = yGroup.map(y => [y, d3.scaleSequential()
+    .interpolator(d3.interpolatePuBuGn)
+    .domain(d3.extent(data.filter(d => d.y === y).map(d => d.value)))]
+  ).reduce((a, [y, c]) => ({...a, [y]: c}), {});
   var myColor = d3.scaleSequential()
     .interpolator(d3.interpolatePuBuGn)
     .domain(d3.extent(data.map(d => d.value)))
@@ -51,7 +55,7 @@ const draw = function(data, {hightlightX =[], xGroup, yGroup} = {}) {
       .html(`
     <div class="card ">
     <div class="card-body">
-        <h5 class="card-title"> Value: ${d.value.toFixed(2)}  at (x: ${d.x}, y: ${d.y})</h5>
+        <h5 class="card-title"> Value: ${formatMoney(d.value.toFixed(2))}  at (x: ${d.x}, y: ${d.y})</h5>
       <ul class="list-group list-group-flush flex-wrap d-flex flex-row bd-highlight mb-5">
         ${values.map(v => '<li class="list-group-item d-flex justify-content-between align-items-center">'+v.key + '<span class="badge badge-pill">' + v.val + '</span></li>')}
       </ul>
@@ -86,7 +90,7 @@ const draw = function(data, {hightlightX =[], xGroup, yGroup} = {}) {
     .attr("ry", 4)
     .attr("width", x.bandwidth() )
     .attr("height", y.bandwidth() )
-    .style("fill", function(d) { return myColor(d.value)} )
+    .style("fill", d => perRow ? colorForY[d.y](d.value) : myColor(d.value))
     .style("stroke-width", 4)
     .style("stroke", d => hightlightX.indexOf(d.x) >= 0 ? 'red' : 'none')
     .style("opacity", 0.8)
@@ -95,6 +99,22 @@ const draw = function(data, {hightlightX =[], xGroup, yGroup} = {}) {
     .on("mouseleave", mouseleave)
 
 }
+
+function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
+  try {
+    decimalCount = Math.abs(decimalCount);
+    decimalCount = isNaN(decimalCount) ? 2 : decimalCount;
+
+    const negativeSign = amount < 0 ? "-" : "";
+
+    let i = parseInt(amount = Math.abs(Number(amount) || 0).toFixed(decimalCount)).toString();
+    let j = (i.length > 3) ? i.length % 3 : 0;
+
+    return negativeSign + (j ? i.substr(0, j) + thousands : '') + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + thousands) + (decimalCount ? decimal + Math.abs(amount - i).toFixed(decimalCount).slice(2) : "");
+  } catch (e) {
+    console.log(e)
+  }
+};
 
 // {
 //  ask: 152.73
