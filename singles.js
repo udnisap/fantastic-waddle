@@ -62,8 +62,8 @@ const options = [
     filter: (s, { underlyingPrice }) => s.putCall === 'CALL' ? s.strikePrice < underlyingPrice :s.strikePrice > underlyingPrice
   },
   { name: 'PutSelling',
-    map: (s, { underlyingPrice })=> s.last * 100.00 / (s.strikePrice - s.last) * (365 / s.daysToExpiration) ,
-    filter: (s, { underlyingPrice }) => s.strikePrice <= 50
+    map: (s, { underlyingPrice })=> s.bid * 100.00 / (s.strikePrice - s.bid) * (365 / s.daysToExpiration) ,
+    filter: (s, { underlyingPrice }) => s.strikePrice <= 30 && s.bid > 0 && s.daysToExpiration < 60
   }
 ];
 
