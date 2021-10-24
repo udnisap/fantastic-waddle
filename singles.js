@@ -24,6 +24,11 @@ const showHeatMapFor = (symbol, type, map,
         .filter(s => filter(s,context))
         .map(s => ({
           ...s,
+          openInterest : s.openInterest || 0,
+          gamma : s.gamma || 0,
+          delta: s.delta || 0,
+          theta: s.theta || 0,
+          vega: s.vega || 0,
           value: map(s, context),
           x: parseFloat(s.strikePrice),
           y: s.daysToExpiration
@@ -51,7 +56,8 @@ function closest(num, arr) {
 
 const options = [
   { name: 'Volatility', map: s => s.volatility},
-  { name: 'Bid Ask Spread', map: s => s.ask - s.bid },
+  { name: 'Bid Ask Spread', map: s => 1/(s.ask - s.bid) },
+  { name: 'Delta', map: s => s.delta * 2 / (s.bid + s.ask)},
   { name: 'Open Interest', map: s => s.openInterest, perRow: true,
     pivot: (data) => {
       const expirationStrikeMap = (data.reduce((a, s) => ({
@@ -82,12 +88,57 @@ const options = [
   { name: 'Mark', map: s => s.mark },
   { name: 'Unusual', map: s => s.openInterest === 0 ? s.totalVolume: s.totalVolume / s.openInterest },
   { name: 'Price', map: s => s.ask},
+  { name: 'Forward', map: s => - s.delta /(s.ask * s.theta)},
   { name: 'Underpriced (To Buy)', map: s => s.theoreticalOptionValue - s.ask},
   { name: 'Overpriced (To Sell)', map: s => s.bid - s.theoreticalOptionValue},
   { name: 'Pain',
     map: (s, { underlyingPrice })=> s.bid * s.openInterest * Math.abs(s.strikePrice - underlyingPrice),
     perRow: true,
     filter: (s, { underlyingPrice }) => s.putCall === 'CALL' ? s.strikePrice < underlyingPrice :s.strikePrice > underlyingPrice
+  },
+  { name: 'Hedges',
+    perRow: true,
+    map: (s, { underlyingPrice })=> s.delta * s.openInterest,
+    init: () => {
+      // console.log('hiding tooltips');
+      // tooltip.style('display', 'none');
+    },
+    pivot: (data, { underlyingPrice }) => {
+      console.log(data)
+      const expirationStrikeMap = (data.reduce((a, s) => ({
+        ...a,
+        [s.daysToExpiration + ':' +s.strikePrice ]: (a[s.daysToExpiration + ':' + s.strikePrice] || []).concat(s)
+      }), {}));
+      console.log(expirationStrikeMap);
+
+      const resp = Object.values(expirationStrikeMap)
+        .flatMap(([o1, o2]) => {
+          const c = o1.putCall === 'CALL' ? o1 : o2;
+          const p = o1.putCall === 'PUT' ? o1 : o2;
+
+          return ({
+            'c.openInterest': c.openInterest,
+            'p.openInterest': p.openInterest,
+            'c.delta': c.delta,
+            'p.delta': p.delta,
+            'c.gamma': c.gamma,
+            'p.gamma': p.gamma,
+            value:  (c.delta * c.openInterest + p.delta * p.openInterest),
+            // both o1, o2 has same expirationDate and strike
+            x: parseFloat(o1.strikePrice),
+            y: o1.daysToExpiration,
+            daysToExpiration: o1.daysToExpiration
+          })
+        })
+
+      console.log(resp.reduce((a, i) => ({
+        ...a,
+        [i.daysToExpiration] : (a[i.daysToExpiration] || 0) + i.value
+      }), {}));
+      console.log(resp.reduce((a, i) => (a + i.value), 0));
+
+      return resp;
+    }
   },
   { name: 'MM Shares',
     perRow: true,
@@ -116,7 +167,7 @@ const options = [
             'p.delta': p.delta,
             'c.gamma': c.gamma,
             'p.gamma': p.gamma,
-            value: o1.delta * o1.openInterest + o2.delta * o2.openInterest,
+            value:  (o1.delta * o1.openInterest + o2.delta * o2.openInterest),
             // both o1, o2 has same expirationDate and strike
             x: parseFloat(o1.strikePrice),
             y: o1.daysToExpiration
@@ -138,7 +189,7 @@ const options = [
           const originalShares = obj.value;
           const strikePrice = obj.x;
           const newShares = expirationMap[obj.y]
-            .reduce((a, o) => a + (o.gamma * (strikePrice - o.strikePrice) + o.delta) * o.openInterest , 0);
+            .reduce((a, o) => a + (strikePrice - o.strikePrice)*((o.gamma * (strikePrice - o.strikePrice) + o.delta) * o.openInterest) , 0);
           return ({
             x: obj.x,
             y: obj.y,
