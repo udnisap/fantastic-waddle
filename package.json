@@ -2,6 +2,7 @@
   "name": "OptionsViz",
   "version": "1.0.0",
   "description": "",
+  "type": "module",
   "main": "options-heatmap.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -11,6 +12,9 @@
   "license": "ISC",
   "dependencies": {
     "console.table": "^0.10.0",
+    "greeks": "^1.0.0",
+    "implied-volatility": "^1.0.0",
+    "json2csv": "^5.0.6",
     "node-fetch": "^2.6.0"
   }
 }
